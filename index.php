@@ -176,65 +176,119 @@
 //
 //$obj = new Krug(12);
 //print $obj->plo();
+//
+//class Person {
+//    public $name;
+//    public $HP;
+//    public $settlement;
+//    function property($name,$settlement)
+//    {
+//       $this->name = $name;
+//       $this->settlement = $settlement;
+//       $this->HP = 100;
+//    }
+//
+//    public function loss($damage) {
+//        $this->HP -= $damage;
+//        if ($this->HP < 0) {
+//            $this->HP = 0;
+//        }
+//    }
+//    public function treatment() {
+//            $this->HP +=5;
+//        if ($this->HP > 100) {
+//            $this->HP = 100;
+//        }
+//    }
+//}
+//
+//class Citizen extends Person {
+//    public function property($name,$settlement) {
+//        parent::property($name,$settlement);
+//    }
+//    function attack($hit){
+//        if ($hit->HP>0){
+//            $this->loss(15);
+//        }
+//    }
+//
+//}
+//class Warrior extends Person{
+//    public function property($name,$settlement) {
+//        parent::property($name,$settlement);
+//    }
+//    function attack($hit){
+//        if ($hit->HP>0){
+//            $this->loss(10);
+//        }
+//    }
+//
+//}
+//
+//class Healer extends Person{
+//    public function property($name,$settlement) {
+//        parent::property($name,$settlement);
+//    }
+//
+//}
 
+try {
+    $host = '127.0.0.1';
+    $db = 'test';
+    $user = 'root';
+    $pass = '';
+    $charset = 'utf8';
 
+    $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+    $opt = [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+        PDO::ATTR_EMULATE_PREPARES => false,
+    ];
 
+    $pdo = new PDO($dsn, $user, $pass, $opt);
+    var_dump($pdo);
+    echo "<br/>";
 
-class Person {
-    public $name;
-    public $HP;
-    public $settlement;
-    function property($name,$settlement)
-    {
-       $this->name = $name;
-       $this->settlement = $settlement;
-       $this->HP = 100;
+    $stmt = $pdo->query('SELECT * FROM product');
+    var_dump($stmt);
+    echo "<br/>";
+
+    while ($row = $stmt->fetch()) {
+        echo $row['name'] . " " . $row['ves'] . " " . $row['sort_id'];
+        echo "<br/>";
     }
 
-    public function loss($damage) {
-        $this->HP -= $damage;
-        if ($this->HP < 0) {
-            $this->HP = 0;
-        }
+    $deleteId = 3;
+    $deleteStmt = $pdo->prepare('DELETE FROM product WHERE id = :id');
+    $deleteStmt->execute([':id' => $deleteId]);
+    echo "Запись с id = $deleteId удалена.<br/>";
+
+    $updateId = 4;
+    $newName = 'test';
+    $newVes = 150;
+
+    $updateStmt = $pdo->prepare('UPDATE product SET name = :name, ves = :ves WHERE id = :id');
+    $updateStmt->execute([
+        ':name' => $newName,
+        ':ves' => $newVes,
+        ':id' => $updateId
+    ]);
+    echo "Запись с id = $updateId обновлена.<br/>";
+
+    $sql = "SELECT product.name, product.ves, sort.sort AS sort_name
+            FROM product
+            JOIN sort ON product.sort_id = sort.id";
+
+    $stmt = $pdo->query($sql);
+
+    while ($row = $stmt->fetch()) {
+        echo " " . $row['name'] . "," . $row['ves'] . ",  " . $row['sort_name'] . "<br/>";
     }
-    public function treatment() {
-            $this->HP +=5;
-        if ($this->HP > 100) {
-            $this->HP = 100;
-        }
-    }
+
+} catch (PDOException $e) {
+    echo 'Ошибка: ' . $e->getMessage();
 }
-
-class Citizen extends Person {
-    public function property($name,$settlement) {
-        parent::property($name,$settlement);
-    }
-    function attack($hit){
-        if ($hit->HP>0){
-            $this->loss(15);
-        }
-    }
-
-}
-class Warrior extends Person{
-    public function property($name,$settlement) {
-        parent::property($name,$settlement);
-    }
-    function attack($hit){
-        if ($hit->HP>0){
-            $this->loss(10);
-        }
-    }
-
-}
-
-class Healer extends Person{
-    public function property($name,$settlement) {
-        parent::property($name,$settlement);
-    }
-
-}
-
 
 
 
